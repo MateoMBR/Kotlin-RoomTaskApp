@@ -37,7 +37,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Initialiser la base de données Room
         appDb = Room.databaseBuilder(
             applicationContext,
             AppDb::class.java,
@@ -68,7 +67,6 @@ fun TaskScreen(taskDao: TaskDao) {
         Text("📝 Room Task Manager", style = MaterialTheme.typography.headlineMedium)
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Section pour ajouter une tâche
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
@@ -97,7 +95,6 @@ fun TaskScreen(taskDao: TaskDao) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Liste des tâches
         Text("${tasks.value.size} tâche(s)", style = MaterialTheme.typography.bodyMedium)
         Spacer(modifier = Modifier.height(8.dp))
 
