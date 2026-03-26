@@ -1,0 +1,52 @@
+# Gradle files
+.gradle/
+build/
+*.apk
+*.ap_
+*.aab
+*.obb
+
+# Local configuration file (sdk path, etc)
+local.properties
+
+# Generated files
+bin/
+gen/
+.idea/
+.gradle
+*.iml
+*.apk
+*.dex
+*.class
+.classpath
+.project
+.settings
+.DS_Store
+*.swp
+*.swo
+*~
+.#*
+\#*#
+._*
+.AppleDouble
+.LSOverride
+
+# IDE
+.vscode/
+*.swp
+*.iws
+*.ipr
+
+# Build generated
+build/
+.gradle/
+gradle-app.setting
+!gradle-wrapper.jar
+
+# Android Studio
+.idea/
+*.iml
+.gradle
+
+# Mac
+.DS_Store
