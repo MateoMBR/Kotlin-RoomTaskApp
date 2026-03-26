@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -21,23 +20,17 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.room.Room
-import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
-    private lateinit var appDb: AppDb
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        appDb = Room.databaseBuilder(
+        val db = Room.databaseBuilder(
             applicationContext,
             AppDb::class.java,
             "app_database"
@@ -46,7 +39,10 @@ class MainActivity : ComponentActivity() {
         setContent {
             MaterialTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    TaskScreen(appDb.dao())
+                    val viewModel: TaskViewModel = viewModel(
+                        factory = TaskViewModelFactory(db.dao())
+                    )
+                    TaskScreen(viewModel)
                 }
             }
         }
@@ -54,10 +50,9 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun TaskScreen(taskDao: TaskDao) {
-    val scope = rememberCoroutineScope()
-    val newTaskTitle = remember { mutableStateOf("") }
-    val tasks = taskDao.getAll().collectAsState(emptyList())
+fun TaskScreen(viewModel: TaskViewModel) {
+    val tasks = viewModel.tasks.collectAsState()
+    val taskInput = viewModel.taskInput.collectAsState()
 
     Column(
         modifier = Modifier
@@ -72,22 +67,15 @@ fun TaskScreen(taskDao: TaskDao) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             TextField(
-                value = newTaskTitle.value,
-                onValueChange = { newTaskTitle.value = it },
+                value = taskInput.value,
+                onValueChange = { viewModel.updateTaskInput(it) },
                 label = { Text("Nouvelle tâche") },
                 modifier = Modifier
                     .weight(1f)
                     .padding(end = 8.dp)
             )
             Button(
-                onClick = {
-                    if (newTaskTitle.value.isNotBlank()) {
-                        scope.launch {
-                            taskDao.insert(Task(title = newTaskTitle.value))
-                            newTaskTitle.value = ""
-                        }
-                    }
-                }
+                onClick = { viewModel.addTask() }
             ) {
                 Text("Ajouter")
             }
@@ -100,14 +88,14 @@ fun TaskScreen(taskDao: TaskDao) {
 
         LazyColumn(modifier = Modifier.fillMaxSize()) {
             items(tasks.value) { task ->
-                TaskItem(task, taskDao, scope)
+                TaskItem(task, viewModel)
             }
         }
     }
 }
 
 @Composable
-fun TaskItem(task: Task, taskDao: TaskDao, scope: kotlinx.coroutines.CoroutineScope) {
+fun TaskItem(task: Task, viewModel: TaskViewModel) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -116,11 +104,7 @@ fun TaskItem(task: Task, taskDao: TaskDao, scope: kotlinx.coroutines.CoroutineSc
     ) {
         Text("✓ ${task.title}", modifier = Modifier.weight(1f))
         IconButton(
-            onClick = {
-                scope.launch {
-                    taskDao.delete(task)
-                }
-            }
+            onClick = { viewModel.deleteTask(task) }
         ) {
             Text("🗑️")
         }
